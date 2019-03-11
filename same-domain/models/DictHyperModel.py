@@ -8,6 +8,7 @@ from tensorflow.contrib import seq2seq
 from .supercell import HyperLSTMCell
 
 class DictHyperModel(object):
+	#我们
     '''
 	def __init__(self,vocab_size,word_dim,hidden_dim,
 				 pad_word,init_embedding=None,
