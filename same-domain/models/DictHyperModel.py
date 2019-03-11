@@ -10,7 +10,7 @@ from .supercell import HyperLSTMCell
 class DictHyperModel(object):
 	
     '''
-	def __init__(self,vocab_size,word_dim,hidden_dim,
+	def __init__(self,vocab_size,word_dim,hidden_dim,  
 				 pad_word,init_embedding=None,
 				 num_classes=4,clip=5,
 				 lr=0.001,l2_reg_lamda=0.0,num_layers=1,
@@ -26,10 +26,10 @@ class DictHyperModel(object):
                  hidden_dim2=128,hyper_embedding_size=16
                  ):
 
-        self.x=tf.placeholder(dtype=tf.int32,shape=[None,None,9],name='input_x')   #input_x??
-        self.y=tf.placeholder(dtype=tf.int32,shape=[None,None],name='input_y')   	#input_y??
-        self.dict=tf.placeholder(dtype=tf.float32,shape=[None,None,8],name='dict')	#dict??
-        self.dropout_keep_prob=tf.placeholder(dtype=tf.float32,name='dropout_keep_prob')  #dropout_keep_prob??
+        self.x=tf.placeholder(dtype=tf.int32,shape=[None,None,9],name='input_x')   
+        self.y=tf.placeholder(dtype=tf.int32,shape=[None,None],name='input_y')   	
+        self.dict=tf.placeholder(dtype=tf.float32,shape=[None,None,8],name='dict')	
+        self.dropout_keep_prob=tf.placeholder(dtype=tf.float32,name='dropout_keep_prob')  #dropout_keep_prob 
 		
 		
 
@@ -53,16 +53,19 @@ class DictHyperModel(object):
             x=tf.nn.embedding_lookup(self.embedding,self.x) #x  embedding
 			#batch=2,reshape: 2 * n *(9*dimention)
             x = tf.reshape(x, [self.batch_size, -1, 9 * word_dim])
-
+		
+        '''
         def lstm_cell(dim):
             cell=rnn.BasicLSTMCell(dim)
             cell=rnn.DropoutWrapper(cell,output_keep_prob=self.dropout_keep_prob)
             return cell
-
+		'''
+		
         def hyperlstm_cell(dim):
             cell=HyperLSTMCell(num_units=hidden_dim,forget_bias=1.0,use_recurrent_dropout=False,
                                dropout_keep_prob=1.0,use_layer_norm=False,hyper_num_units=hidden_dim2,
                                hyper_embedding_size=hyper_embedding_size,hyper_use_recurrent_dropout=False)
+			#运算符将dropout添加到给定单元格的输入和输出。				   
             cell=rnn.DropoutWrapper(cell,output_keep_prob=self.dropout_keep_prob)
             return cell
 
@@ -70,19 +73,20 @@ class DictHyperModel(object):
         with tf.variable_scope('first_layer'):
             inputx=tf.concat([x,self.dict],axis=2)   #沿一个维度连接张量 axis越小，连接的维度越靠外。
 													#0为最外层也就是维度的第一位,2则是(?, ?, 900) (?, ?, 8) concat 得到(?, ?, 908)
-            (forward_output,backword_output),_=tf.nn.bidirectional_dynamic_rnn(
-                cell_fw=hyperlstm_cell(hidden_dim),
-                cell_bw=hyperlstm_cell(hidden_dim),
-                inputs=inputx,
-                sequence_length=self.seq_length,
-                dtype=tf.float32
+            (forward_output,backword_output),_=tf.nn.bidirectional_dynamic_rnn(  #keras.layers.Bidirectional(keras.layers.RNN(cell))
+                cell_fw=hyperlstm_cell(hidden_dim), #RNNCell的一个实例，用于前向 
+                cell_bw=hyperlstm_cell(hidden_dim), #RNNCell的一个实例，用于反向
+                inputs=inputx,    #RNN输入
+                sequence_length=self.seq_length,   #包含批处理中每个序列的实际长度
+                dtype=tf.float32   #初始状态和预期输出的数据类型
 				
             )
-            output=tf.concat([forward_output,backword_output],axis=2)
+			
+            output=tf.concat([forward_output,backword_output],axis=2) #得到合并的输出
 
         with tf.variable_scope('loss'):
 
-            self.output=layers.fully_connected(
+            self.output=layers.fully_connected(  #全连接层
                 inputs=output,
                 num_outputs=num_classes,
                 activation_fn=None,
