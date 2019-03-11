@@ -1,3 +1,6 @@
+forked from https://github.com/fudannlp16/CWS_Dict and i add some comment
+
+
 # Neural Networks Incorporating Dictionaries for Chinese Word Segmentation
 Source codes and corpora for the Chinese word segmentation algorithm proposed in the following paper.
 
