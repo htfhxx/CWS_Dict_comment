@@ -8,7 +8,7 @@ from tensorflow.contrib import seq2seq
 from .supercell import HyperLSTMCell
 
 class DictHyperModel(object):
-	#我们
+	
     '''
 	def __init__(self,vocab_size,word_dim,hidden_dim,
 				 pad_word,init_embedding=None,
@@ -34,21 +34,21 @@ class DictHyperModel(object):
 		
 
 		
-		#for example: (batch_size=2)  (x_batch).shape   (2, 163, 9)
-		#get batch_size length of sequence:  seq_length=[153 163] : length of 2 sequence :153 163
+		#例如: (batch_size=2)  (x_batch).shape:   (2, 163, 9)
+		#得到batch_size个句子的长度:  seq_length=[153 163]   2个句子的长度 :153 163
         self.seq_length=tf.reduce_sum(tf.cast(tf.not_equal(self.x[:,:,2], tf.ones_like(self.x[:,:,2])*pad_word), tf.int32), 1)
-		#get o/1 from bool.
+		#bool类型转化为o/1.  通过与全1矩阵的比较，得到矩阵的各个点是否有字，没有字的地方即为0
         self.weights=tf.cast(tf.not_equal(self.x[:,:,2], tf.ones_like(self.x[:,:,2])*pad_word), tf.float32)
 		#(x_batch).shape   (2, 163, 9)   
         self.batch_size = tf.shape(self.x)[0] #??(batch_size=2):  (x_batch).shape   (2, 163, 9)
 
-		#get embedding
+		#得到embedding
         if init_embedding is None:
             self.embedding=tf.get_variable(shape=[vocab_size,word_dim],dtype=tf.float32,name='embedding')
         else:
             self.embedding=tf.Variable(init_embedding,dtype=tf.float32,name='embedding')
 
-		#get embedding
+		#将x与embedding匹配，x从id变成embedding
         with tf.variable_scope('embedding'):
             x=tf.nn.embedding_lookup(self.embedding,self.x) #x  embedding
 			#batch=2,reshape: 2 * n *(9*dimention)
