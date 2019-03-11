@@ -12,6 +12,7 @@ from utils_data import *
 from utils import *
 from sklearn.model_selection import train_test_split
 
+
 tf.flags.DEFINE_string('dataset','msr',"Dataset for evaluation")
 tf.flags.DEFINE_string("model_path", 'msr2', "The filename of model path")
 tf.flags.DEFINE_float("memory",1.0,"Allowing GPU memory growth")
@@ -70,6 +71,8 @@ def train():
     print( 'len(test_data): %d' % len(x_test))
     print( 'init_embedding shape: [%d,%d]' % (init_embedding.shape[0], init_embedding.shape[1]))
     print( 'Train started!')
+    print(FLAGS.is_train)
+	
     
     tfConfig = tf.ConfigProto()
     tfConfig.gpu_options.per_process_gpu_memory_fraction = FLAGS.memory
@@ -87,8 +90,8 @@ def train():
         saver = tf.train.Saver(tf.global_variables ())		
         ckpt = tf.train.get_checkpoint_state(checkpoints_model) #如果“checkpoint”文件包含有效的CheckpointState原型，则返回它
        
-	   #接着训练or从头开始训练
-		if ckpt and ckpt.model_checkpoint_path:
+	    #接着训练or从头开始训练
+        if ckpt and ckpt.model_checkpoint_path:
             print( 'restore from original model!')
             saver.restore(sess, ckpt.model_checkpoint_path)    #恢复变量
         else:
@@ -96,7 +99,7 @@ def train():
 		
 		
         best_f1,best_e=0,0
-        for epoch in xrange(config.n_epoch):
+        for epoch in range(config.n_epoch):
             start_time=time.time()  
             #
             #train
@@ -104,7 +107,7 @@ def train():
             for step,(X,dict_X,Y) in enumerate(data_iterator2(zip(X_train,dict_train),y_train,128,padding_word=word2id[PAD],shuffle=True)):
                 
 				#训练得到loss
-				loss=model.train_step(sess,X,dict_X,Y,config.dropout_keep_prob)
+                loss=model.train_step(sess,X,dict_X,Y,config.dropout_keep_prob)
 				
                 print( 'epoch:%d>>%2.2f%%' % (epoch,config.batch_size*step*100.0/len(X_train)),'completed in %.2f (sec) <<\r' % (time.time()-start_time),)
                 sys.stdout.flush()
@@ -151,7 +154,7 @@ def train():
             print( '--------------------------------')
 
 
-            if best_e>4:
+            if best_e>3000:
                 print( 'Early stopping')
                 break
 
@@ -199,10 +202,14 @@ def predict():
 
 
 if __name__ == '__main__':
+    print("go??????")
+    print(FLAGS.is_train)
     if FLAGS.is_train:
         train()
+        #predict()
     else:
         predict()
+        #train()
 
 
 

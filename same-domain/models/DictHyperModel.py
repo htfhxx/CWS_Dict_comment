@@ -51,7 +51,7 @@ class DictHyperModel(object):
 		#将x与embedding匹配，x从id变成embedding
         with tf.variable_scope('embedding'):
             x=tf.nn.embedding_lookup(self.embedding,self.x) #x  embedding
-			#batch=2,reshape: 2 * n *(9*dimention)
+			#batch=2,reshape: 2 * n *(9*dimention)        将原先的x的9维合并为1维
             x = tf.reshape(x, [self.batch_size, -1, 9 * word_dim])
 		
         '''
@@ -69,11 +69,12 @@ class DictHyperModel(object):
             cell=rnn.DropoutWrapper(cell,output_keep_prob=self.dropout_keep_prob)
             return cell
 
-		
+		#第一层：输入9*100+8维的inputx，投入Bi-LSTM
         with tf.variable_scope('first_layer'):
             inputx=tf.concat([x,self.dict],axis=2)   #沿一个维度连接张量 axis越小，连接的维度越靠外。
 													#0为最外层也就是维度的第一位,2则是(?, ?, 900) (?, ?, 8) concat 得到(?, ?, 908)
-            (forward_output,backword_output),_=tf.nn.bidirectional_dynamic_rnn(  #keras.layers.Bidirectional(keras.layers.RNN(cell))
+            #forward_output shape=(?, ?, 128)
+            (forward_output,backword_output),_=tf.nn.bidirectional_dynamic_rnn(  
                 cell_fw=hyperlstm_cell(hidden_dim), #RNNCell的一个实例，用于前向 
                 cell_bw=hyperlstm_cell(hidden_dim), #RNNCell的一个实例，用于反向
                 inputs=inputx,    #RNN输入
@@ -82,26 +83,30 @@ class DictHyperModel(object):
 				
             )
 			
-            output=tf.concat([forward_output,backword_output],axis=2) #得到合并的输出
+            output=tf.concat([forward_output,backword_output],axis=2) #得到合并的输出 shape=(?, ?, 256)
 
         with tf.variable_scope('loss'):
 
             self.output=layers.fully_connected(  #全连接层
                 inputs=output,
                 num_outputs=num_classes,
-                activation_fn=None,
+                activation_fn=None,  #默认relu，none表示无
                 )
             #crf
-            log_likelihood, self.transition_params = crf.crf_log_likelihood(
+			#最大似然log_likelihood       dtype=float32
+			#转换矩阵transition_params   shape=(4, 4) dtype=float32_ref
+            log_likelihood, self.transition_params = crf.crf_log_likelihood(   
                 self.output, self.y, self.seq_length)
-
-            loss = tf.reduce_mean(-log_likelihood)
+			#计算张量维度的元素平均值 dtype=float32
+            loss = tf.reduce_mean(-log_likelihood)   
 
         with tf.variable_scope('train_op'):
-            self.optimizer=tf.train.AdamOptimizer(learning_rate=lr)
-            tvars=tf.trainable_variables()
+            self.optimizer=tf.train.AdamOptimizer(learning_rate=lr) 		#Adam优化器
+            tvars=tf.trainable_variables()  #返回使用的所有变量
+			#add_n:逐个元素地添加所有输入张量    l2_loss: L2损失
             l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in tvars if v.get_shape().ndims > 1])
             self.loss=loss+l2_reg_lamda*l2_loss
+			
             grads,_=tf.clip_by_global_norm(tf.gradients(self.loss,tvars),clip)
             self.train_op=self.optimizer.apply_gradients(zip(grads,tvars))
 	

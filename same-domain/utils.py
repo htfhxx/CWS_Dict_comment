@@ -104,10 +104,10 @@ def evaluate_word_PRF(y_pred, y):
 	yp_wordnum = y_pred.count(2) + y_pred.count(3)
 	yt_wordnum = y.count(2) + y.count(3)
 	start = 0
-	for i in xrange(len(y)):
+	for i in range(len(y)):
 		if y[i] == 2 or y[i] == 3:
 			flag = True
-			for j in xrange(start, i + 1):
+			for j in range(start, i + 1):
 				if y[j] != y_pred[j]:
 					flag = False
 			if flag == True:

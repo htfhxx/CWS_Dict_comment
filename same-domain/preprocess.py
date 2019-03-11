@@ -32,7 +32,7 @@ def strQ2B(ustring):
             inside_code = 32
         elif (inside_code >= 65281 and inside_code <= 65374):  # 全角字符（除空格）根据关系转化
             inside_code -= 65248
-        rstring += unichr(inside_code)
+        rstring += str(inside_code)
     return rstring
 
 
@@ -101,7 +101,7 @@ def bigram_words(dataset,window_size=2):
             #words={'会E': 1, '北京': 1, '音乐': 1, '乐会': 1, 'EE': 1, '行新': 1, '年音': 1, 'S北': 1, '京举': 1, '举行': 1, '新年': 1, 'SS': 1}    
     with codecs.open(dataset+'_bigram','w','utf-8') as f:
         for k,v in words.items():
-            f.write(k+' '+unicode(v)+'\n')
+            f.write(k+' '+str(v)+'\n')
 
 
 if __name__ == '__main__':
