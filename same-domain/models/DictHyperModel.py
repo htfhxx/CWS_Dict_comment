@@ -68,8 +68,8 @@ class DictHyperModel(object):
 
 		
         with tf.variable_scope('first_layer'):
-            inputx=tf.concat([x,self.dict],axis=2)   #????????? ???????0 ???1 2. (?, ?, 900) (?, ?, 8) concat ??(?, ?, 908)
-			
+            inputx=tf.concat([x,self.dict],axis=2)   #沿一个维度连接张量 axis越小，连接的维度越靠外。
+													#0为最外层也就是维度的第一位,2则是(?, ?, 900) (?, ?, 8) concat 得到(?, ?, 908)
             (forward_output,backword_output),_=tf.nn.bidirectional_dynamic_rnn(
                 cell_fw=hyperlstm_cell(hidden_dim),
                 cell_bw=hyperlstm_cell(hidden_dim),
