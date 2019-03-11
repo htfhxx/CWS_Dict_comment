@@ -31,38 +31,26 @@ class DictHyperModel(object):
         self.dropout_keep_prob=tf.placeholder(dtype=tf.float32,name='dropout_keep_prob')  #dropout_keep_prob??
 		
 		
-        '''
-		(x_batch).shape = (2, 163, 9)
-		#??batch_size??????
-		self.seq_length=tf.math.reduce_sum(
-			tf.cast(           # ?bool????? int32 
-				tf.math.not_equal(    #?????????n?,??bool????    ???? ???  
-					self.x[:,:,2], tf.ones_like(self.x[:,:,2])*pad_word #ones_like ?????1???
-					#??[:,:,2] ???2*163 ?bool
-					#??[:,:,:] ???2*163*9 ?bool
-				), tf.int32
-			), 1
-		)
-        '''
+
 		
-		#??(batch_size=2):  (x_batch).shape   (2, 163, 9)
-		#??batch_size??????  seq_length=[153 163]  batch_size??????:153 163
+		#for example: (batch_size=2)  (x_batch).shape   (2, 163, 9)
+		#get batch_size length of sequence:  seq_length=[153 163] : length of 2 sequence :153 163
         self.seq_length=tf.reduce_sum(tf.cast(tf.not_equal(self.x[:,:,2], tf.ones_like(self.x[:,:,2])*pad_word), tf.int32), 1)
-		#?????? ????????1,??????0
+		#get o/1 from bool.
         self.weights=tf.cast(tf.not_equal(self.x[:,:,2], tf.ones_like(self.x[:,:,2])*pad_word), tf.float32)
-		#??batch_size:2   (x_batch).shape   (2, 163, 9)   
+		#(x_batch).shape   (2, 163, 9)   
         self.batch_size = tf.shape(self.x)[0] #??(batch_size=2):  (x_batch).shape   (2, 163, 9)
 
-		#??embedding
+		#get embedding
         if init_embedding is None:
             self.embedding=tf.get_variable(shape=[vocab_size,word_dim],dtype=tf.float32,name='embedding')
         else:
             self.embedding=tf.Variable(init_embedding,dtype=tf.float32,name='embedding')
 
-		#?x?????
+		#get embedding
         with tf.variable_scope('embedding'):
             x=tf.nn.embedding_lookup(self.embedding,self.x) #x  embedding
-			#?batch=2?,???reshape? 2 * n *(9*dimention)?
+			#batch=2,reshape: 2 * n *(9*dimention)
             x = tf.reshape(x, [self.batch_size, -1, 9 * word_dim])
 
         def lstm_cell(dim):
