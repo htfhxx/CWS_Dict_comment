@@ -92,7 +92,6 @@ def build_reverse_dictionary(word_to_id):
 
 #get model's inputs
 #例如：每行，line="李  鹏  在  北京  考察  企业"
-    
 def get_train_data(filename=None,word2id=None,usebigram=True):
     #X_train,y_train=get_train_data(train_data_path,word2id)
     #                                   pku_train        

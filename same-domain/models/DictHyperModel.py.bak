@@ -54,12 +54,12 @@ class DictHyperModel(object):
 			#batch=2,reshape: 2 * n *(9*dimention)        将原先的x的9维合并为1维
             x = tf.reshape(x, [self.batch_size, -1, 9 * word_dim])
 		
-        
+        '''
         def lstm_cell(dim):
             cell=rnn.BasicLSTMCell(dim)
             cell=rnn.DropoutWrapper(cell,output_keep_prob=self.dropout_keep_prob)
             return cell
-		
+		'''
 		
         def hyperlstm_cell(dim):
             cell=HyperLSTMCell(num_units=hidden_dim,forget_bias=1.0,use_recurrent_dropout=False,
