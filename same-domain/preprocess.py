@@ -39,12 +39,14 @@ def strQ2B(ustring):
 def preprocess(input,output):
     ''' pku_training.utf8(input) 生成一个pku_train_all(output)文件 '''
     output_filename = os.path.join(OUTPUT_PATH,output)
-    idioms=dict()
+	
     #取出成语词典中的成语
+	idioms=dict()
     with codecs.open(CHINESE_IDIOMS,'r','utf-8') as f:    
         for line in f:  
             idioms[line.strip()]=1    #返回移除字符串头尾指定的字符(空格)生成的新字符串                              标记为1
-    count_idioms = 0
+    
+	count_idioms = 0
     sents=[]
     #pku_training.utf8的文本处理：
     with codecs.open(input,'r','utf-8') as fin:
