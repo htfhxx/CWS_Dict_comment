@@ -202,14 +202,12 @@ def predict():
 
 
 if __name__ == '__main__':
-    print("go??????")
-    print(FLAGS.is_train)
     if FLAGS.is_train:
-        #train()
-        predict()
-    else:
-        #predict()
         train()
+        
+    else:
+        predict()
+
 
 
 
