@@ -1,4 +1,5 @@
 forked from https://github.com/fudannlp16/CWS_Dict and i add some comment
+
 加上了很多注释，如有需要可以参考。
 
 
